@@ -45,11 +45,13 @@ const getAllBlocksRecursive = async (
   let hasMore = true;
   while (hasMore) {
     context.requests += 1;
-    const res = await notionRequest(() =>
-      notion.blocks.children.list({
-        block_id: blockId,
-        page_size: 100,
-      }),
+    const res = await notionRequest(
+      `blocks.children.list block=${blockId}`,
+      () =>
+        notion.blocks.children.list({
+          block_id: blockId,
+          page_size: 100,
+        }),
     );
     hasMore = res.has_more;
     allResults.push(...res.results);

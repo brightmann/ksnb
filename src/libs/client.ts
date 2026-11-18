@@ -21,8 +21,8 @@ const getRetryAfterMilliseconds = (error: unknown): number | undefined => {
 
   const apiError = error as {
     headers?: Headers | Record<string, string>;
-    body?: string | { additional_data?: { retry_after?: number } };
-    retry_after?: number;
+    body?: string | { additional_data?: { retry_after?: number | string } };
+    retry_after?: number | string;
   };
 
   const headerValue =
@@ -31,7 +31,7 @@ const getRetryAfterMilliseconds = (error: unknown): number | undefined => {
       : apiError.headers?.["retry-after"];
   const headerSeconds = headerValue ? Number(headerValue) : undefined;
 
-  let bodyRetryAfter: number | undefined;
+  let bodyRetryAfter: number | string | undefined;
   if (typeof apiError.body === "string") {
     try {
       bodyRetryAfter = JSON.parse(apiError.body).additional_data?.retry_after;
@@ -42,9 +42,10 @@ const getRetryAfterMilliseconds = (error: unknown): number | undefined => {
     bodyRetryAfter = apiError.body?.additional_data?.retry_after;
   }
 
-  const retryAfterSeconds =
-    bodyRetryAfter ?? apiError.retry_after ?? headerSeconds;
-  return typeof retryAfterSeconds === "number" && retryAfterSeconds >= 0
+  const retryAfterSeconds = Number(
+    bodyRetryAfter ?? apiError.retry_after ?? headerSeconds,
+  );
+  return Number.isFinite(retryAfterSeconds) && retryAfterSeconds >= 0
     ? retryAfterSeconds * 1000
     : undefined;
 };

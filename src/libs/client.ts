@@ -4,7 +4,7 @@ export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
-const MIN_REQUEST_INTERVAL_MS = 500;
+const MIN_REQUEST_INTERVAL_MS = 350;
 const MAX_RETRIES = 3;
 
 let requestQueue: Promise<void> = Promise.resolve();

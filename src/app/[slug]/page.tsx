@@ -19,7 +19,7 @@ const PostPage = async ({ params }: { params: { slug: string } }) => {
   const nextPost =
     0 <= targetPostIndex - 1 ? allPosts[targetPostIndex - 1] : null;
 
-  const blocks = await getAllBlocks(post.id);
+  const blocks = await getAllBlocks(post.id, params.slug);
 
   return (
     <div className="bg-gray-200">

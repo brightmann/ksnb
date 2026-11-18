@@ -82,22 +82,38 @@ const waitForRequestStart = async (): Promise<void> => {
 };
 
 export const notionRequest = async <T>(
+  label: string,
   request: () => Promise<T>,
 ): Promise<T> => {
   await acquireRequestSlot();
   try {
     for (let attempt = 0; ; attempt += 1) {
       await waitForRequestStart();
+      console.info(`[notion-request-start] ${label} attempt=${attempt + 1}`);
       try {
-        return await request();
+        const response = await request();
+        console.info(`[notion-request-done] ${label} attempt=${attempt + 1}`);
+        return response;
       } catch (error) {
         const status =
           error && typeof error === "object"
             ? (error as { status?: number }).status
             : undefined;
-        if (status !== 429 || attempt >= MAX_RETRIES) throw error;
+        if (status !== 429 || attempt >= MAX_RETRIES) {
+          console.error(
+            `[notion-request-failed] ${label} attempt=${attempt + 1} status=${
+              status ?? "unknown"
+            }`,
+          );
+          throw error;
+        }
 
         const retryAfter = getRetryAfterMilliseconds(error);
+        console.warn(
+          `[notion-request-retry] ${label} attempt=${
+            attempt + 1
+          } retryAfterMs=${retryAfter ?? MIN_REQUEST_INTERVAL_MS}`,
+        );
         await sleep(
           Math.max(
             retryAfter ?? MIN_REQUEST_INTERVAL_MS,

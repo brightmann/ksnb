@@ -43,17 +43,25 @@ const getAllBlocksRecursive = async (
   const allResults: (BlockObjectResponse | PartialBlockObjectResponse)[] = [];
 
   let hasMore = true;
+  let startCursor: string | undefined;
   while (hasMore) {
     context.requests += 1;
     const res = await notionRequest(
-      `blocks.children.list block=${blockId}`,
+      `blocks.children.list block=${blockId} page=${context.requests}`,
       () =>
         notion.blocks.children.list({
           block_id: blockId,
           page_size: 100,
+          start_cursor: startCursor,
         }),
     );
     hasMore = res.has_more;
+    startCursor = res.next_cursor ?? undefined;
+    if (hasMore && !startCursor) {
+      throw new Error(
+        `Notion returned has_more without next_cursor for block ${blockId}`,
+      );
+    }
     allResults.push(...res.results);
   }
 

@@ -1,3 +1,4 @@
+export const dynamicParams = false;
 import { notFound } from "next/navigation";
 import { PageNation } from "@/components/PageNation";
 import { PostCards } from "@/components/PostCards";

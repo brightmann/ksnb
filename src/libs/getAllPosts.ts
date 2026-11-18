@@ -7,7 +7,7 @@ export const getAllPosts = async (): Promise<Post[]> => {
   const allResults: QueryDatabaseResponse["results"] = [];
   let hasMore = true;
   while (hasMore) {
-    const res = await notionRequest(() =>
+    const res = await notionRequest("database.query", () =>
       notion.databases.query({
         database_id: process.env.NOTION_DATABASE,
         filter: {

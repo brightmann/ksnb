@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   staticPageGenerationTimeout: 300,
+  experimental: { cpus: 1 },
   images: {
     domains: [
       "notion-blog.kanaru.jp",

@@ -6,13 +6,45 @@ import { unsupportedBlocks } from "@/constants/unsupportedBlocks";
 import type { ExpandedBlockObjectResponse } from "@/types/notion";
 import { notion, notionRequest } from "./client";
 
+type BlockFetchContext = {
+  visited: Set<string>;
+  requests: number;
+  repeats: number;
+};
+
 export const getAllBlocks = async (
   blockId: string,
+  slug?: string,
 ): Promise<ExpandedBlockObjectResponse[]> => {
+  const context: BlockFetchContext = {
+    visited: new Set(),
+    requests: 0,
+    repeats: 0,
+  };
+  const blocks = await getAllBlocksRecursive(blockId, context);
+  if (slug) {
+    console.info(
+      `[notion-block-fetch-count] slug=${slug} requests=${context.requests} repeatedBlocks=${context.repeats}`,
+    );
+  }
+  return blocks;
+};
+
+const getAllBlocksRecursive = async (
+  blockId: string,
+  context: BlockFetchContext,
+): Promise<ExpandedBlockObjectResponse[]> => {
+  if (context.visited.has(blockId)) {
+    context.repeats += 1;
+    return [];
+  }
+  context.visited.add(blockId);
+
   const allResults: (BlockObjectResponse | PartialBlockObjectResponse)[] = [];
 
   let hasMore = true;
   while (hasMore) {
+    context.requests += 1;
     const res = await notionRequest(() =>
       notion.blocks.children.list({
         block_id: blockId,
@@ -29,7 +61,7 @@ export const getAllBlocks = async (
     .filter((result): result is BlockObjectResponse => "type" in result)
     .map(async (block) => {
       if (!unsupportedBlocks.includes(block.type) && block.has_children) {
-        const children = await getAllBlocks(block.id);
+        const children = await getAllBlocksRecursive(block.id, context);
         return { ...block, children };
       }
       return block;

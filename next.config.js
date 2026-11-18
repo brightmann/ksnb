@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const isCloudflarePages = process.env.CF_PAGES === "1";
+const isCloudflarePages = process.env.CF_PAGES === "1" || process.env.CF_WORKERS_BUILD === "1";
 
 const nextConfig = {
   staticPageGenerationTimeout: 300,

@@ -4,7 +4,7 @@ import type {
 } from "@notionhq/client/build/src/api-endpoints";
 import { unsupportedBlocks } from "@/constants/unsupportedBlocks";
 import type { ExpandedBlockObjectResponse } from "@/types/notion";
-import { notion } from "./client";
+import { notion, notionRequest } from "./client";
 
 export const getAllBlocks = async (
   blockId: string,
@@ -13,10 +13,12 @@ export const getAllBlocks = async (
 
   let hasMore = true;
   while (hasMore) {
-    const res = await notion.blocks.children.list({
-      block_id: blockId,
-      page_size: 100,
-    });
+    const res = await notionRequest(() =>
+      notion.blocks.children.list({
+        block_id: blockId,
+        page_size: 100,
+      }),
+    );
     hasMore = res.has_more;
     allResults.push(...res.results);
   }

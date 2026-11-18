@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const isCloudflarePages = process.env.CF_PAGES === "1";
+
 const nextConfig = {
   staticPageGenerationTimeout: 300,
   experimental: { cpus: 1 },
@@ -10,6 +12,7 @@ const nextConfig = {
       "picsum.photos",
     ],
     formats: ["image/avif", "image/webp"],
+    ...(isCloudflarePages ? { unoptimized: true } : {}),
   },
   async rewrites() {
     return [
